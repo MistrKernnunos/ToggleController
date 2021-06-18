@@ -1,0 +1,8 @@
+//
+// Created by machavi on 6/18/21.
+//
+
+#ifndef TOGGLECONTROLLER_CONSTANST_H
+#define TOGGLECONTROLLER_CONSTANST_H
+
+#endif // TOGGLECONTROLLER_CONSTANST_H
