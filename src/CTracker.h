@@ -23,9 +23,10 @@ public:
 
   volatile bool running = false;
 
+  String name;
+
 private:
   String apiKey;
-  String name;
   int pid;
   int id = 0;
   static char *sha1;
