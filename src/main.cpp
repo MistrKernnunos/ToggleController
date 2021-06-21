@@ -1,5 +1,6 @@
 #include "CController.h"
 #include "CTracker.h"
+#include "CWebServer.h"
 #include "Constanst.h"
 #include <Adafruit_NeoPixel.h>
 #include <Arduino.h>
@@ -8,8 +9,9 @@
 #define LED_COUNT 4
 
 CController controller(10000, D2, 4);
+CWebServer server;
 
-//bool ledState = false;
+// bool ledState = false;
 
 void setup() {
   Serial.begin(9600);
@@ -26,23 +28,26 @@ void setup() {
   Serial.println("");
   Serial.println("WiFi connected");
 
-  controller.AddTracker(apiKey, "tes1", 161879008, D1, {"test", "zabava"});
+  server.StartServer();
+
+  controller.AddTracker(apiKey, "test1", 161879008, D1, {"test", "zabava"});
   controller.AddTracker(apiKey, "test2", 161879008, D3, {"test", "zabava"});
   controller.AddTracker(apiKey, "test3", 161879008, D4, {"test", "zabava"});
 
   controller.Start();
 
-//  pinMode(LED_BUILTIN, OUTPUT);
-//  digitalWrite(LED_BUILTIN, ledState);
+  //  pinMode(LED_BUILTIN, OUTPUT);
+  //  digitalWrite(LED_BUILTIN, ledState);
 }
 
 void loop() {
   controller.Update();
+  server.handleClient();
 
-//  if (controller.running) {
-//    ledState = false;
-//  } else {
-//    ledState = true;
-//  }
-//  digitalWrite(LED_BUILTIN, ledState);
+  //  if (controller.running) {
+  //    ledState = false;
+  //  } else {
+  //    ledState = true;
+  //  }
+  //  digitalWrite(LED_BUILTIN, ledState);
 }

@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Toggl controller config</title>
+    <script
+            src="https://code.jquery.com/jquery-3.6.0.slim.js"
+            integrity="sha256-HwWONEZrpuoh951cQD1ov2HUK5zA5DwJ1DNUXaM6FsY="
+            crossorigin="anonymous"></script>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-+0n0xVW2eSR5OomGNYDnhzAbDsOXxcvSN1TPprVMTNDbiYZCxYbOOl7+AMvyTG2x" crossorigin="anonymous">
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-gtEjrD/SeCtmISkJkNUaaKMoLD0//ElJ19smozuHV6z3Iehds+3Ulb9Bn9Plx0x4"
+            crossorigin="anonymous"></script>
+
+    <link href="//cdnjs.cloudflare.com/ajax/libs/select2/4.0.0/css/select2.min.css" rel="stylesheet"/>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/select2/4.0.0/js/select2.min.js"></script>
+
+</head>
+<body>
+<div class="container">
+    <h1 align="center" class="form-label">Configure your toggl controller</h1>
+
+    <form id="config">
+        <div class="mb-3">
+            <label for="desc" class="form-label">Description</label>
+            <input type="text" class="form-control" id="desc" required>
+        </div>
+        <div class="mb-3">
+            <label for="projects" class="form-label">Project</label>
+            <select id="projects" class="projects form-select" required>
+                <option value="1">test1</option>
+                <option value="2">test2</option>
+                <option value="3">test3</option>
+                <option value="4">test4</option>
+                <option value="7">test5</option>
+                <option value="10">test6</option>
+            </select>
+        </div>
+        <div class="mb-3">
+            <label for="tags" class="form-label">Tags</label>
+            <select id="tags" class="tags  form-select" multiple="multiple">
+                <option></option>
+                <option value="1">test1</option>
+                <option value="2">test2</option>
+                <option value="3">test3</option>
+                <option value="4">test4</option>
+                <option value="7">test5</option>
+                <option value="10">test6</option>
+            </select>
+        </div>
+        <div class="col-12">
+            <button class="btn btn-primary" type="submit">Save config</button>
+        </div>
+    </form>
+
+    <script>
+
+        const request = new XMLHttpRequest;
+        let url = window.location.href;
+        url += "/data";
+
+        request.onreadystatechange = function () {
+            if (this.readyState === 4 && this.status === 200)
+                console.log(request.responseText);
+        }
+
+        request.open("GET", url);
+        request.send();
+
+
+
+        $(document).ready(function () {
+            $(".tags").select2({
+                tags: true,
+                tokenSeparators: [',', ' '],
+                placeholder: "Insert Tags"
+            });
+            $(".projects").select2({
+                    placeholder: "Select project",
+                    allowClear: true
+
+                }
+            );
+        });
+
+
+        // Access the form element...
+
+        const form = document.getElementById("config");
+        form.addEventListener("submit", function (event) {
+            event.preventDefault();
+
+            const form = document.getElementById("config");
+
+            var tagsData = $('#tags').select2('data');
+            var tagsArr = [];
+
+            tagsData.forEach(function (item, index, array) {
+                tagsArr.push(item.text);
+            })
+
+
+            var projectData = $('#projects').select2('data');
+
+
+            var payload = {
+                "description": form[0].value,
+                "project": projectData[0].id,
+                "tags": tagsArr
+            }
+
+            console.log(payload);
+
+            const XHR = new XMLHttpRequest();
+            // Define what happens on successful data submission
+            XHR.addEventListener("load", function (event) {
+                alert(event.target.responseText);
+            });
+
+            // Define what happens in case of error
+            XHR.addEventListener("error", function (event) {
+                alert('Oops! Something went wrong.');
+            });
+
+            // Set up our request
+            XHR.open("POST", "/config");
+            XHR.setRequestHeader("Content-type", "application/json");
+
+            // The data sent is what the user provided in the form
+            XHR.send(payload);
+        })
+    </script>
+
+</div>
+</body>
+</html>
+

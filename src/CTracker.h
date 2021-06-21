@@ -14,7 +14,7 @@ class CTracker {
 public:
   CTracker(const String &apiKey, const String &name, const int pid,
            std::list<String> tags = {})
-      : apiKey(apiKey), name(name), pid(pid), tags(tags){};
+      : name(name), apiKey(apiKey), pid(pid), tags(tags){};
 
   bool Start();
   bool Stop();
