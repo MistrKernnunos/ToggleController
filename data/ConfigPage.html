@@ -25,31 +25,61 @@
 
     <form id="config">
         <div class="mb-3">
-            <label for="desc" class="form-label">Description</label>
-            <input type="text" class="form-control" id="desc" required>
+            <h2 class="form-label">Button 1</h2>
+            <div class="mb-3">
+                <label for="desc1" class="form-label">Description</label>
+                <input type="text" class="form-control" id="desc1" required>
+            </div>
+            <div class="mb-3">
+                <label for="projects1" class="form-label">Project</label>
+                <select id="projects1" class="projects form-select" required>
+                    <option></option>
+                </select>
+            </div>
+            <div class="mb-3">
+                <label for="tags1" class="form-label">Tags</label>
+                <select id="tags1" class="tags  form-select" multiple="multiple">
+                    <option></option>
+                </select>
+            </div>
         </div>
         <div class="mb-3">
-            <label for="projects" class="form-label">Project</label>
-            <select id="projects" class="projects form-select" required>
-                <option value="1">test1</option>
-                <option value="2">test2</option>
-                <option value="3">test3</option>
-                <option value="4">test4</option>
-                <option value="7">test5</option>
-                <option value="10">test6</option>
-            </select>
+            <h2 class="form-label">Button 2</h2>
+            <div class="mb-3">
+                <label for="desc2" class="form-label">Description</label>
+                <input type="text" class="form-control" id="desc2" required>
+            </div>
+            <div class="mb-3">
+                <label for="projects2" class="form-label">Project</label>
+                <select id="projects2" class="projects form-select" required>
+                    <option></option>
+                </select>
+            </div>
+            <div class="mb-3">
+                <label for="tags2" class="form-label">Tags</label>
+                <select id="tags2" class="tags  form-select" multiple="multiple">
+                    <option></option>
+                </select>
+            </div>
         </div>
         <div class="mb-3">
-            <label for="tags" class="form-label">Tags</label>
-            <select id="tags" class="tags  form-select" multiple="multiple">
-                <option></option>
-                <option value="1">test1</option>
-                <option value="2">test2</option>
-                <option value="3">test3</option>
-                <option value="4">test4</option>
-                <option value="7">test5</option>
-                <option value="10">test6</option>
-            </select>
+            <h2 class="form-label">Button 3</h2>
+            <div class="mb-3">
+                <label for="desc3" class="form-label">Description</label>
+                <input type="text" class="form-control" id="desc3" required>
+            </div>
+            <div class="mb-3">
+                <label for="projects3" class="form-label">Project</label>
+                <select id="projects3" class="projects form-select" required>
+                    <option></option>
+                </select>
+            </div>
+            <div class="mb-3">
+                <label for="tags3" class="form-label">Tags</label>
+                <select id="tags3" class="tags  form-select" multiple="multiple">
+                    <option></option>
+                </select>
+            </div>
         </div>
         <div class="col-12">
             <button class="btn btn-primary" type="submit">Save config</button>
@@ -60,34 +90,36 @@
 
         const request = new XMLHttpRequest;
         let url = window.location.href;
-        url += "/data";
-
+        url += "data";
+        let RequestedData = {};
+        let tags = {}
+        let projects = {}
         request.onreadystatechange = function () {
-            if (this.readyState === 4 && this.status === 200)
-                console.log(request.responseText);
+            if (this.readyState === 4 && this.status === 200) {
+                RequestedData = JSON.parse(request.responseText);
+                tags = RequestedData["tags"]["results"];
+                projects = RequestedData["projects"]["results"];
+                $(".tags").select2({
+                    tags: true,
+                    tokenSeparators: [',', ' '],
+                    placeholder: "Insert Tags",
+                    data: tags
+                });
+                $(".projects").select2({
+                        placeholder: "Select project",
+                        allowClear: true,
+                        data: projects
+                    }
+                );
+
+                console.log(tags);
+                console.log(projects)
+            }
         }
 
         request.open("GET", url);
         request.send();
 
-
-
-        $(document).ready(function () {
-            $(".tags").select2({
-                tags: true,
-                tokenSeparators: [',', ' '],
-                placeholder: "Insert Tags"
-            });
-            $(".projects").select2({
-                    placeholder: "Select project",
-                    allowClear: true
-
-                }
-            );
-        });
-
-
-        // Access the form element...
 
         const form = document.getElementById("config");
         form.addEventListener("submit", function (event) {
@@ -95,22 +127,50 @@
 
             const form = document.getElementById("config");
 
-            var tagsData = $('#tags').select2('data');
-            var tagsArr = [];
+            let tagsData1 = $('#tags1').select2('data');
+            let tagsArr1 = [];
 
-            tagsData.forEach(function (item, index, array) {
-                tagsArr.push(item.text);
+            tagsData1.forEach(function (item, index, array) {
+                tagsArr1.push(item.text);
             })
 
+            let tagsData2 = $('#tags2').select2('data');
+            let tagsArr2 = [];
 
-            var projectData = $('#projects').select2('data');
+            tagsData2.forEach(function (item, index, array) {
+                tagsArr2.push(item.text);
+            })
+
+            let tagsData3 = $('#tags3').select2('data');
+            let tagsArr3 = [];
+
+            tagsData3.forEach(function (item, index, array) {
+                tagsArr3.push(item.text);
+            })
+
+            let projectData1 = $('#projects1').select2('data');
+            let projectData2 = $('#projects2').select2('data');
+            let projectData3 = $('#projects3').select2('data');
 
 
-            var payload = {
-                "description": form[0].value,
-                "project": projectData[0].id,
-                "tags": tagsArr
-            }
+            let payload = [
+
+                {
+                    "description": form[0].value,
+                    "pid": projectData1[0].id,
+                    "tags": tagsArr1
+                },
+                {
+                    "description": form[4].value,
+                    "pid": projectData2[0].id,
+                    "tags": tagsArr2
+                },
+                {
+                    "description": form[8].value,
+                    "pid": projectData3[0].id,
+                    "tags": tagsArr3
+                }
+            ]
 
             console.log(payload);
 
@@ -130,7 +190,7 @@
             XHR.setRequestHeader("Content-type", "application/json");
 
             // The data sent is what the user provided in the form
-            XHR.send(payload);
+            XHR.send(JSON.stringify(payload));
         })
     </script>
 

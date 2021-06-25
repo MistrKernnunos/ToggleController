@@ -3,6 +3,7 @@
 //
 #ifndef CTracker_h
 #define CTracker_h
+#include "LittleFS.h"
 #include <ArduinoJson.h>
 #include <ESP8266HTTPClient.h>
 #include <ESP8266WiFi.h>
@@ -13,8 +14,9 @@
 class CTracker {
 public:
   CTracker(const String &apiKey, const String &name, const int pid,
-           std::list<String> tags = {})
-      : name(name), apiKey(apiKey), pid(pid), tags(tags){};
+           size_t jsonIndex, std::list<String> tags = {})
+      : name(name), apiKey(apiKey), pid(pid), jsonIndex(jsonIndex),
+        tags(tags){};
 
   bool Start();
   bool Stop();
@@ -29,12 +31,12 @@ private:
   String apiKey;
   int pid;
   int id = 0;
-  static char *sha1;
-  static char *apiToken;
+  static String sha1;
+  size_t jsonIndex;
   std::list<String> tags;
 };
 
-char *CTracker::sha1 =
+String CTracker::sha1 =
     "6E:FB:32:84:1D:FA:F2:9E:78:25:52:93:AF:5B:21:29:48:71:91:2C";
 
 bool CTracker::Start() {
@@ -44,38 +46,54 @@ bool CTracker::Start() {
     HTTPClient http;
     WiFiClientSecure client;
     http.useHTTP10();
-    client.setFingerprint(sha1);
+    client.setFingerprint(sha1.c_str());
     http.begin(client, "https://api.track.toggl.com/api/v8/time_entries/start");
     http.setAuthorization(apiKey.c_str(), "api_token");
 
     http.addHeader("Content-Type", "application/json");
 
-    StaticJsonDocument<256> doc;
-    JsonObject obj = doc.createNestedObject("time_entry");
-    obj["description"] = name;
-    obj["pid"] = pid;
+    LittleFS.begin();
+    auto file = LittleFS.open("./config.json", "r");
 
-    if (!empty(tags)) {
-      JsonArray tagsArray = obj.createNestedArray("tags");
-      for (auto elem : tags) {
-        tagsArray.add(elem);
-      }
+    DynamicJsonDocument doc(1024);
+    DynamicJsonDocument payload(1024);
+    deserializeJson(doc, file.readString());
+    LittleFS.end();
+
+#ifdef DEBUG_Tracker
+    Serial.printf("[HTTP] POST... code: %d\n", httpCode);
+    String test;
+    serializeJsonPretty(doc, test);
+    Serial.println(test);
+#endif
+
+    if (doc.as<JsonArray>()[jsonIndex] == nullptr) {
+      // TODO show on display
+      Serial.println("no config");
+      return false;
     }
 
+    JsonObject obj = payload.createNestedObject("time_entry");
+    obj.set(doc.as<JsonArray>()[jsonIndex].as<JsonObject>());
+
     obj["created_with"] = "tlacitko";
-    serializeJson(doc, jsonOutput);
+    serializeJson(payload, jsonOutput);
+
     Serial.println(String(jsonOutput));
+
     int httpCode = http.POST(String(jsonOutput));
 
     if (httpCode > 0) {
-      Serial.printf("[HTTP] POST... code: %d\n", httpCode);
       StaticJsonDocument<512> returnDoc;
       deserializeJson(returnDoc, http.getStream());
       JsonObject retData = returnDoc["data"];
       id = retData["id"];
       running = true;
-      Serial.println(id);
 
+#ifdef DEBUG_Tracker
+      Serial.printf("[HTTP] POST... code: %d\n", httpCode);
+      Serial.println(id);
+#endif
     } else {
       Serial.printf("[HTTP] POST... failed, error: %s\n",
                     http.errorToString(httpCode).c_str());
@@ -93,7 +111,7 @@ bool CTracker::Stop() {
   HTTPClient http;
   WiFiClientSecure client;
   http.useHTTP10();
-  client.setFingerprint(sha1);
+  client.setFingerprint(sha1.c_str());
   // prepare url
   String stopUrl = "https://api.track.toggl.com/api/v8/time_entries/";
   stopUrl += String(id) += "/stop";
@@ -125,7 +143,7 @@ bool CTracker::Update() {
     HTTPClient http;
     WiFiClientSecure client;
     http.useHTTP10();
-    client.setFingerprint(sha1);
+    client.setFingerprint(sha1.c_str());
     http.begin(client, currUrl);
     http.setAuthorization(apiKey.c_str(), "api_token");
 

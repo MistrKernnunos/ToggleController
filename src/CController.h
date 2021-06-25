@@ -33,7 +33,8 @@ private:
 void CController::AddTracker(const String &apiKey, const String &name,
                              const int pid, int pin,
                              std::list<String> tags = {}) {
-  trackers.emplace_back(apiKey, name, pid, tags);
+  size_t index = trackers.size();
+  trackers.emplace_back(apiKey, name, pid, index, tags);
   buttons.push_back(Bounce2::Button());
   buttons.back().attach(pin, INPUT_PULLUP);
   buttons.back().interval(5);
@@ -50,8 +51,6 @@ void CController::Update() {
   for (size_t i = 0; i < buttons.size(); ++i) {
     buttons[i].update();
     if (buttons[i].pressed()) {
-      Serial.println("pressed");
-      Serial.println(trackers[i].name);
       // start different timer that the current running
       if (running && runningIndex != i) {
         trackers[runningIndex].Stopped();
