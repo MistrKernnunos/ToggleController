@@ -58,7 +58,10 @@ bool CTracker::Start() {
     DynamicJsonDocument doc(1024);
     DynamicJsonDocument payload(1024);
     deserializeJson(doc, file.readString());
+<<<<<<< HEAD
     LittleFS.end();
+=======
+>>>>>>> 90df00c3e52369076f2e69a3e9d0c4c71dc39769
 
 #ifdef DEBUG_Tracker
     Serial.printf("[HTTP] POST... code: %d\n", httpCode);
@@ -82,6 +85,7 @@ bool CTracker::Start() {
     Serial.println(String(jsonOutput));
 
     int httpCode = http.POST(String(jsonOutput));
+    LittleFS.end();
 
     if (httpCode > 0) {
       StaticJsonDocument<512> returnDoc;
